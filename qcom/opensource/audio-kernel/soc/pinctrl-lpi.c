@@ -156,6 +156,11 @@ static int lpi_gpio_read(struct lpi_gpio_pad *pad, unsigned int addr)
 		return 0;
 	state = dev_get_drvdata(lpi_dev);
 
+	if (lpi_dev == NULL)
+		return 0;
+
+	state = dev_get_drvdata(lpi_dev);
+
 	if (!lpi_dev_up) {
 		if (__ratelimit(&rtl))
 			pr_err("%s: ADSP is down due to SSR, return\n",
@@ -191,6 +196,11 @@ static int lpi_gpio_write(struct lpi_gpio_pad *pad, unsigned int addr,
 	static DEFINE_RATELIMIT_STATE(rtl, 1 * HZ, 1);
 	if (lpi_dev == NULL)
 		return 0;
+	state = dev_get_drvdata(lpi_dev);
+
+	if (lpi_dev == NULL)
+		return 0;
+
 	state = dev_get_drvdata(lpi_dev);
 
 	if (!lpi_dev_up) {
