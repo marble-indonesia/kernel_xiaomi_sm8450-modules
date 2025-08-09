@@ -1304,11 +1304,6 @@ int aw882xx_dev_set_intmask(struct aw_device *aw_dev, bool flag)
 	struct aw_int_desc *desc = &aw_dev->int_desc;
 	int ret = -1;
 
-	if ((aw_dev->status == AW_DEV_PW_OFF) && flag) {
-		flag = false;
-		aw_dev_info(aw_dev->dev, "dev have power off, cannot start intrpt");
-	}
-
 	if (flag)
 		ret = aw_dev->ops.aw_i2c_write(aw_dev->i2c, desc->mask_reg,
 					desc->int_mask);
