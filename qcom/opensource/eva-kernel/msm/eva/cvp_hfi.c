@@ -576,6 +576,7 @@ static int __read_queue(struct cvp_iface_q_info *qinfo, u8 *packet,
 		 * packet->size data corrupted of shared queue by mallicious FW.
 		 */
 
+
 		*((u32 *) packet) = packet_size_in_bytes;
 	} else {
 		dprintk(CVP_WARN,
