@@ -330,6 +330,7 @@ struct algo_ramp_params {
 
 
 struct aw_device {
+	bool ef_unlocked;
 	int status;
 	unsigned int chip_id;
 	unsigned int monitor_start;
@@ -407,7 +408,7 @@ struct aw_device {
 
 
 /*start/stop*/
-int aw882xx_device_start(struct aw_device *aw_dev);
+int aw882xx_device_start(struct aw_device *aw_dev, bool lock_valid);
 int aw882xx_device_stop(struct aw_device *aw_dev);
 int aw882xx_dev_reg_update(struct aw_device *aw_dev, bool force);
 int aw882xx_dev_get_list_head(struct list_head **head);

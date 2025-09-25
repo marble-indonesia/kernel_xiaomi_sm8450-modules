@@ -37,7 +37,7 @@
 #include "aw882xx_bin_parse.h"
 #include "aw882xx_spin.h"
 
-#define AW882XX_DRIVER_VERSION "v2.0.7"
+#define AW882XX_DRIVER_VERSION "v2.0.9"
 #define AW882XX_I2C_NAME "aw882xx_smartpa"
 
 #define AW_READ_CHIPID_RETRIES		5	/* 5 times */
@@ -363,7 +363,7 @@ static void aw882xx_start_pa(struct aw882xx *aw882xx)
 				continue;
 			}
 
-			ret = aw882xx_device_start(aw882xx->aw_pa);
+			ret = aw882xx_device_start(aw882xx->aw_pa, aw882xx->lock_valid);
 			if (ret) {
 				aw_dev_err(aw882xx->dev, "start failed, cnt:%d", i);
 				continue;
@@ -1358,7 +1358,7 @@ static void aw882xx_irq_restart(struct aw882xx *aw882xx)
 		}
 
 		if (aw882xx->allow_pw && aw882xx->pstream) {
-			ret = aw882xx_device_start(aw882xx->aw_pa);
+			ret = aw882xx_device_start(aw882xx->aw_pa, aw882xx->lock_valid);
 			if (ret) {
 				aw_dev_err(aw882xx->dev, "start failed");
 				goto failed_exit;
@@ -2384,6 +2384,7 @@ static int aw882xx_parse_dt(struct device *dev, struct aw882xx *aw882xx,
 	int32_t dc_enable = 0;
 	int32_t sync_enable = 0;
 	uint32_t mute_sync = 0;
+	int32_t lock_valid = 0;
 
 	/*gpio dts parser*/
 	ret = aw882xx_parse_gpio_dt(aw882xx, np);
@@ -2430,6 +2431,18 @@ static int aw882xx_parse_dt(struct device *dev, struct aw882xx *aw882xx,
 	}
 
 	aw882xx->mute_sync = mute_sync;
+
+	ret = of_property_read_u32(np, "lock-valid", &lock_valid);
+	if (ret < 0) {
+		aw_dev_info(aw882xx->dev,
+			"read ef lock valid failed,default ef lock valid off");
+		lock_valid = false;
+	} else {
+		aw_dev_info(aw882xx->dev,
+			"ef lock valid is %d", lock_valid);
+	}
+
+	aw882xx->lock_valid = lock_valid;
 
 	aw882xx_parse_rename_flag_dt(aw882xx);
 	aw882xx_parse_sync_load_dt(aw882xx);
@@ -3274,8 +3287,9 @@ static int aw882xx_i2c_remove(struct i2c_client *i2c)
 
 EXIT:
 #ifdef AW_KERNEL_VER_OVER_6_1_0
+	return;
 #else
-		return 0;
+	return 0;
 #endif
 }
 

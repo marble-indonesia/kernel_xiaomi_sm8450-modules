@@ -185,6 +185,7 @@ struct aw882xx {
 	unsigned char allow_pw;		/* allow power */
 	uint32_t rename_flag;
 	unsigned char sync_load;	/* sync load fw */
+	unsigned char lock_valid;
 
 	int reset_gpio;
 	int irq_gpio;

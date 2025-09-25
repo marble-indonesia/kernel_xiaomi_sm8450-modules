@@ -908,7 +908,7 @@ void aw_dev_i2s_enable(struct aw_device *aw_dev, bool flag)
  * aw882xx_device start /stop
  *
  ******************************************************/
-int aw882xx_device_start(struct aw_device *aw_dev)
+int aw882xx_device_start(struct aw_device *aw_dev, bool lock_valid)
 {
 	int ret;
 
@@ -917,6 +917,15 @@ int aw882xx_device_start(struct aw_device *aw_dev)
 	if (aw_dev->status == AW_DEV_PW_ON) {
 		aw_dev_info(aw_dev->dev, "already power on");
 		return 0;
+	}
+
+	if (aw_dev->ef_unlocked) {
+		if (lock_valid) {
+			aw_dev_err(aw_dev->dev, "ef check failed, cannot start");
+			return 0;
+		}
+
+		aw_dev_info(aw_dev->dev, "ef check failed, Skip and continue to start");
 	}
 
 	/*set froce boost*/
@@ -1560,8 +1569,14 @@ int aw882xx_dev_check_ef_lock(struct aw_device *aw_dev)
 
 	for (i = 0; i < ef_desc->count; i++) {
 		aw_dev->ops.aw_i2c_read(aw_dev->i2c, ef_desc->sequence[i].reg, &reg_val);
-		aw_dev_info(aw_dev->dev, "read reg:0x%x = 0x%x", ef_desc->sequence[i].reg, reg_val);
+		if ((reg_val & (~ef_desc->sequence[i].mask)) != ef_desc->sequence[i].check_val) {
+			aw_dev->ef_unlocked = true;
+			aw_dev_err(aw_dev->dev, "ef check failed: 0x%x=0x%x", ef_desc->sequence[i].reg, reg_val);
+		}
 	}
+
+	if (!aw_dev->ef_unlocked)
+		aw_dev_info(aw_dev->dev, "ef locked");
 
 	return 0;
 }
