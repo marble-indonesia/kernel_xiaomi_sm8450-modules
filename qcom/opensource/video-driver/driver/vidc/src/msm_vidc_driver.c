@@ -29,7 +29,7 @@
 extern struct msm_vidc_core *g_core;
 
 #define is_odd(val) ((val) % 2 == 1)
-#define in_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
+#define is_in_range(val, min, max) (((min) <= (val)) && ((val) <= (max)))
 #define COUNT_BITS(a, out) {       \
 	while ((a) >= 1) {          \
 		(out) += (a) & (1); \
@@ -1598,7 +1598,7 @@ int msm_vidc_update_property_cap(struct msm_vidc_inst *inst, u32 hfi_id,
 		break;
 	case HFI_PROP_DPB_LIST:
 		if (!allow)
-			memset(inst->dpb_list_payload, 0, MAX_DPB_LIST_ARRAY_SIZE);
+			memset(inst->dpb_list_payload, 0, sizeof(inst->dpb_list_payload));
 		msm_vidc_update_cap_value(inst, DPB_LIST, allow, __func__);
 		break;
 	default:
@@ -5948,8 +5948,8 @@ static bool msm_vidc_allow_image_encode_session(struct msm_vidc_inst *inst)
 	min_height = capability->cap[FRAME_HEIGHT].min;
 	max_height = capability->cap[FRAME_HEIGHT].max;
 	fmt = &inst->fmts[INPUT_PORT];
-	if (!in_range(fmt->fmt.pix_mp.width, min_width, max_width) ||
-		!in_range(fmt->fmt.pix_mp.height, min_height, max_height)) {
+	if (!is_in_range(fmt->fmt.pix_mp.width, min_width, max_width) ||
+		!is_in_range(fmt->fmt.pix_mp.height, min_height, max_height)) {
 		i_vpr_e(inst, "unsupported wxh [%u x %u], allowed [%u x %u] to [%u x %u]\n",
 			fmt->fmt.pix_mp.width, fmt->fmt.pix_mp.height,
 			min_width, min_height, max_width, max_height);
@@ -6075,8 +6075,8 @@ static int msm_vidc_check_resolution_supported(struct msm_vidc_inst *inst)
 
 	/* check if input width and height is in supported range */
 	if (is_decode_session(inst) || is_encode_session(inst)) {
-		if (!in_range(width, min_width, max_width) ||
-			!in_range(height, min_height, max_height)) {
+		if (!is_in_range(width, min_width, max_width) ||
+			!is_in_range(height, min_height, max_height)) {
 			i_vpr_e(inst,
 				"%s: unsupported input wxh [%u x %u], allowed range: [%u x %u] to [%u x %u]\n",
 				__func__, width, height, min_width,
